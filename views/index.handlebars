@@ -1,7 +1,8 @@
  <h2 class="page-header">Spaceship pilot - {{username}}</h2>
 
  <div class="game">
-     <div class="btn-primary">{{score}}</div>
+     <div class="alert alert-info game__score"> Score: {{score}}</div>
+     <div class="alert alert-danger game__error">{{gameError}}</div>
     <div class="game__screen">
         {{gameScene.[0]}} </br>
         {{gameScene.[1]}} </br>
@@ -20,7 +21,7 @@
  <div class="controller">
      <a href="/top"><button class="btn btn-info controller__top">Top</button></a>
      <a href="/left"><button class="btn btn-info controller__left">Left</button></a>
-     <a herf="/bottom"><button class="btn btn-info controller__bottom">Bottom</button></a>
+     <a href="/bottom"><button class="btn btn-info controller__bottom">Bottom</button></a>
      <a href="/right"><button class="btn btn-info controller__right">Right</button></a>
      <div>
          <a href="/start"><button class="btn btn-primary controller__start">Start Game</button></a>

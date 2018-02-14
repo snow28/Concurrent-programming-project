@@ -90,6 +90,13 @@ footer{
   text-align: center;
 }
 
+.game__error{
+  text-align: center;
+}
+
+.game__score{
+  text-align: center;
+}
 
 .controller{
   text-align: center;

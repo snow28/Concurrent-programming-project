@@ -73,6 +73,7 @@ app.use(flash());
 // Global Vars
 app.use(function (req, res, next) {
     res.locals.score = req.flash('score');
+    res.locals.gameError = req.flash('gameError');
     res.locals.gameScene = req.flash('gameScene');
     res.locals.username = users.Username;
     res.locals.success_msg = req.flash('success_msg');
@@ -94,6 +95,19 @@ app.use('/users', users);
         //------------------  STARTING GAME LOGIC  -------------
 
 var mapTemplate = [
+    [['m'],['o'],['o'],['o'],['o'],['o'],['o'],['o'],['m']],
+    [['o'],['o'],['o'],['o'],['o'],['o'],['o'],['m'],['o']],
+    [['o'],['o'],['m'],['o'],['o'],['o'],['o'],['o'],['o']],
+    [['o'],['o'],['o'],['o'],['o'],['o'],['o'],['o'],['o']],
+    [['o'],['o'],['o'],['o'],['m'],['o'],['o'],['o'],['o']],
+    [['o'],['o'],['o'],['o'],['o'],['o'],['o'],['o'],['o']],
+    [['o'],['o'],['o'],['o'],['o'],['o'],['o'],['o'],['o']],
+    [['o'],['o'],['o'],['o'],['o'],['o'],['m'],['o'],['o']],
+    [['o'],['o'],['m'],['o'],['o'],['o'],['o'],['o'],['o']]
+];
+
+//we will use it to store current map
+const startTemplate = [
     [['x'],['x'],['x'],['x'],['x'],['x'],['x'],['x'],['x']],
     [['x'],['x'],['x'],['x'],['x'],['x'],['x'],['x'],['x']],
     [['x'],['x'],['Y'],['o'],['o'],['o'],['o'],['x'],['x']],
@@ -105,7 +119,6 @@ var mapTemplate = [
     [['x'],['x'],['x'],['x'],['x'],['x'],['x'],['x'],['x']]
 ];
 
-//we will use it to store current map
 var currentTemplate = [];
 
 var gameInfo = {
@@ -117,9 +130,9 @@ var gameInfo = {
 //Staring the game by adding our map to the client-side variable
 app.get('/start',router);
 router.get(('/start'),function(req, res){
-    currentTemplate = mapTemplate;
-    req.flash('score' , 0);
-    req.flash('gameScene', mapTemplate);
+    req.flash('score' , '0');
+    currentTemplate = startTemplate;
+    req.flash('gameScene',  startTemplate);
     res.redirect('/');
 });
 
@@ -128,38 +141,119 @@ router.get(('/start'),function(req, res){
 app.get('/left', router);
 
 router.get('/left',function( req, res){
-    var posX = gameInfo.x;
-    var posY = gameInfo.y;
-    if(gameInfo.x >= 3) {
-        for (var x = 0; x < 5; x++) {
-            currentTemplate[posY - 2 + x][posX + 2] = 'x';
+    if(gameInfo.x != 0) {
+        if (gameInfo.x <= 6) {
+            for (var x = 0; x < 5; x++) {
+                if (gameInfo.y - 2 >= 0 && gameInfo.x + 2 >= 0 && gameInfo.y + 2 <= 8 && gameInfo.x + 2 <= 8) {
+                    currentTemplate[gameInfo.y - 2 + x][gameInfo.x + 2] = 'x';
+                }
+            }
         }
         if (gameInfo.x >= 2) {
             for (var x = 0; x < 5; x++) {
-                currentTemplate[posY - 2 + x][posX - 3] = 'o';
+                if (gameInfo.y - 2 >= 0 && gameInfo.x - 2 >= 0 && gameInfo.y + 2 <= 8 && gameInfo.x + 2 <= 8) {
+                    currentTemplate[gameInfo.y - 2 + x][gameInfo.x - 3] = mapTemplate[gameInfo.y - 2 + x][gameInfo.x - 3];
+                }
             }
         }
-        currentTemplate[posY][posX] = 'o';
-        currentTemplate[posY][posX - 1] = 'p';
-
-
-        gameInfo.x -= 1;
+        currentTemplate[gameInfo.y][gameInfo.x] = mapTemplate[gameInfo.y][gameInfo.x];
+        currentTemplate[gameInfo.y][gameInfo.x - 1] = 'p';
+        gameInfo.x--;
+        req.flash('gameScene', currentTemplate);
+    }else{
+        req.flash('gameError', 'You are at the edge of the universe, Press Start to continue game!');
     }
-
-    req.flash('gameScene', currentTemplate);
     res.redirect('/');
 });
 
 app.get('/right', router);
 
 router.get('/right',function( req, res){
-    var posX = gameInfo.x;
-    var posY = gameInfo.y;
-    if(gameInfo.x <= 6) {
+    if(gameInfo.x <=7){
+        //правая стенка через один ряд
+        if(gameInfo.x >= 2){
+            for(var x=0;x<5;x++){
+                if (gameInfo.y-2+x >= 0 && gameInfo.y-2+x <=8 &&  gameInfo.x-2 >= 0) {
+                    currentTemplate[gameInfo.y - 2 + x][gameInfo.x - 2] = 'x';
+                }
+            }
+        }
+        if(gameInfo.x + 3 <= 8){
+            for(var x=0;x<5;x++){
+                if( gameInfo.y-2+x >= 0 && gameInfo.y-2+x <= 8 && gameInfo.x + 3 <= 8 ){
+                    currentTemplate[gameInfo.y-2+x][gameInfo.x + 3] = mapTemplate[gameInfo.y-2+x][gameInfo.x + 3];
+                }
+            }
+        }
 
-        currentTemplate[posY][posX] = 'o';
-        currentTemplate[posY][posX + 1] = 'p';
-        gameInfo.x +=1;
+        currentTemplate[gameInfo.y][gameInfo.x] = mapTemplate[gameInfo.y][gameInfo.x];
+        currentTemplate[gameInfo.y][gameInfo.x + 1] = 'p';
+        gameInfo.x++;
+    }else{
+        req.flash('gameError', 'You are at the edge of the universe, u cant go out, Press Start to continue game!');
+    }
+
+    req.flash('gameScene', currentTemplate);
+    res.redirect('/');
+});
+
+app.get('/top', router);
+
+router.get('/top',function( req, res){
+    if(gameInfo.y >= 1){
+        if(gameInfo.y <=6 ){
+                for(var x=0; x<5; x++){
+                    if (gameInfo.y + 2 <=8 && gameInfo.x-2+x>=0 &&  gameInfo.x-2+x <= 8 ) {
+                        currentTemplate[gameInfo.y + 2][gameInfo.x - 2 + x] = 'x';
+                    }
+                }
+        }
+        if(gameInfo.y >= 2){
+            for(x =0; x<5; x++){
+                if (gameInfo.y - 3 >= 0 && gameInfo.x-2+x >=0 && gameInfo.x-2+x <= 8) {
+                    currentTemplate[gameInfo.y - 3][gameInfo.x - 2 + x] = mapTemplate[gameInfo.y - 3][gameInfo.x - 2 + x];
+                }
+            }
+        }
+
+        currentTemplate[gameInfo.y][gameInfo.x] = mapTemplate[gameInfo.y][gameInfo.x];
+        currentTemplate[gameInfo.y - 1][gameInfo.x] = 'p';
+        gameInfo.y--;
+
+    }else{
+        req.flash('gameError', 'You are at the edge of the universe, u cant go out, Press Start to continue game!');
+    }
+
+    req.flash('gameScene', currentTemplate);
+    res.redirect('/');
+});
+
+app.get('/bottom', router);
+
+router.get('/bottom',function( req, res){
+    if(gameInfo.y <= 7){
+        if(gameInfo.y >= 2){
+            for(var x=0;x<5;x++){
+                if(gameInfo.y - 2 >= 0 && gameInfo.x-2+x >=0 && gameInfo.x-2+x <=8){
+                    currentTemplate[gameInfo.y - 2][gameInfo.x - 2 + x] = 'x';
+                }
+            }
+        }
+        if(gameInfo.y + 3 <= 8){
+            for(var x=0;x<5;x++){
+                if(gameInfo.x-2+x >=0 && gameInfo.x-2+x <=8){
+                    currentTemplate[gameInfo.y + 3][gameInfo.x - 2 + x] = mapTemplate[gameInfo.y + 3][gameInfo.x - 2 + x];
+                }
+            }
+        }
+
+
+        currentTemplate[gameInfo.y][gameInfo.x] = mapTemplate[gameInfo.y][gameInfo.x];
+        currentTemplate[gameInfo.y +1 ][gameInfo.x] = 'p';
+        gameInfo.y++;
+
+    }else{
+        req.flash('gameError', 'You are at the edge of the universe, u cant go out, Press Start to continue game!');
     }
 
 
