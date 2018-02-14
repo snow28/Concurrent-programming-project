@@ -72,7 +72,7 @@ app.use(flash());
 
 // Global Vars
 app.use(function (req, res, next) {
-    res.locals.score = req.flash('score');
+    res.locals.score = gameInfo.score;
     res.locals.gameError = req.flash('gameError');
     res.locals.gameScene = req.flash('gameScene');
     res.locals.username = users.Username;
@@ -107,10 +107,10 @@ var mapTemplate = [
 ];
 
 //we will use it to store current map
-const startTemplate = [
+var startTemplate = [
     [['x'],['x'],['x'],['x'],['x'],['x'],['x'],['x'],['x']],
     [['x'],['x'],['x'],['x'],['x'],['x'],['x'],['x'],['x']],
-    [['x'],['x'],['Y'],['o'],['o'],['o'],['o'],['x'],['x']],
+    [['x'],['x'],['m'],['o'],['o'],['o'],['o'],['x'],['x']],
     [['x'],['x'],['o'],['o'],['o'],['o'],['o'],['x'],['x']],
     [['x'],['x'],['o'],['o'],['p'],['o'],['o'],['x'],['x']],
     [['x'],['x'],['o'],['o'],['o'],['o'],['o'],['x'],['x']],
@@ -123,7 +123,8 @@ var currentTemplate = [];
 
 var gameInfo = {
     x : 4,
-    y : 4
+    y : 4,
+    score : 0
 };
 
 
@@ -132,7 +133,7 @@ app.get('/start',router);
 router.get(('/start'),function(req, res){
     req.flash('score' , '0');
     currentTemplate = startTemplate;
-    req.flash('gameScene',  startTemplate);
+    req.flash('gameScene',  currentTemplate);
     res.redirect('/');
 });
 
@@ -144,25 +145,36 @@ router.get('/left',function( req, res){
     if(gameInfo.x != 0) {
         if (gameInfo.x <= 6) {
             for (var x = 0; x < 5; x++) {
-                if (gameInfo.y - 2 >= 0 && gameInfo.x + 2 >= 0 && gameInfo.y + 2 <= 8 && gameInfo.x + 2 <= 8) {
+                if (gameInfo.y-2+x>=0 && gameInfo.y-2+x <= 8 && gameInfo.x+2 <= 8) {
                     currentTemplate[gameInfo.y - 2 + x][gameInfo.x + 2] = 'x';
                 }
             }
         }
-        if (gameInfo.x >= 2) {
+        if (gameInfo.x-3 >= 0 ) {
             for (var x = 0; x < 5; x++) {
-                if (gameInfo.y - 2 >= 0 && gameInfo.x - 2 >= 0 && gameInfo.y + 2 <= 8 && gameInfo.x + 2 <= 8) {
+                if (gameInfo.y-2+x >= 0 && gameInfo.y-2+x <= 8 && gameInfo.x-3 >= 0 ) {
                     currentTemplate[gameInfo.y - 2 + x][gameInfo.x - 3] = mapTemplate[gameInfo.y - 2 + x][gameInfo.x - 3];
                 }
             }
         }
+
         currentTemplate[gameInfo.y][gameInfo.x] = mapTemplate[gameInfo.y][gameInfo.x];
+        if(currentTemplate[gameInfo.y][gameInfo.x - 1] == 'm'){
+            var tmp = gameInfo.score;
+            var tmp = parseInt(tmp);
+            tmp++;
+            gameInfo.score = tmp;
+            req.flash('score',tmp);
+            console.log("TMP ->" + tmp);
+
+        }
         currentTemplate[gameInfo.y][gameInfo.x - 1] = 'p';
         gameInfo.x--;
-        req.flash('gameScene', currentTemplate);
     }else{
-        req.flash('gameError', 'You are at the edge of the universe, Press Start to continue game!');
+        req.flash('gameError', 'You are at the edge of the universe!');
     }
+
+    req.flash('gameScene', currentTemplate);
     res.redirect('/');
 });
 
@@ -187,11 +199,19 @@ router.get('/right',function( req, res){
         }
 
         currentTemplate[gameInfo.y][gameInfo.x] = mapTemplate[gameInfo.y][gameInfo.x];
+        if(currentTemplate[gameInfo.y][gameInfo.x + 1] == 'm'){
+            var tmp = gameInfo.score;
+            var tmp = parseInt(tmp);
+            tmp++;
+            gameInfo.score = tmp;
+            req.flash('score',tmp);
+        }
         currentTemplate[gameInfo.y][gameInfo.x + 1] = 'p';
         gameInfo.x++;
     }else{
-        req.flash('gameError', 'You are at the edge of the universe, u cant go out, Press Start to continue game!');
+        req.flash('gameError', 'You are at the edge of the universe, u cant go out!');
     }
+
 
     req.flash('gameScene', currentTemplate);
     res.redirect('/');
@@ -217,11 +237,20 @@ router.get('/top',function( req, res){
         }
 
         currentTemplate[gameInfo.y][gameInfo.x] = mapTemplate[gameInfo.y][gameInfo.x];
+        if(currentTemplate[gameInfo.y - 1][gameInfo.x] == 'm'){
+            var tmp = gameInfo.score;
+            var tmp = parseInt(tmp);
+            tmp++;
+            gameInfo.score = tmp;
+            req.flash('score',tmp);
+            console.log("TMP ->" + tmp);
+
+        }
         currentTemplate[gameInfo.y - 1][gameInfo.x] = 'p';
         gameInfo.y--;
 
     }else{
-        req.flash('gameError', 'You are at the edge of the universe, u cant go out, Press Start to continue game!');
+        req.flash('gameError', 'You are at the edge of the universe, u cant go out!');
     }
 
     req.flash('gameScene', currentTemplate);
@@ -249,19 +278,26 @@ router.get('/bottom',function( req, res){
 
 
         currentTemplate[gameInfo.y][gameInfo.x] = mapTemplate[gameInfo.y][gameInfo.x];
+        if(currentTemplate[gameInfo.y +1 ][gameInfo.x] == 'm'){
+            var tmp = gameInfo.score;
+            var tmp = parseInt(tmp);
+            tmp++;
+            gameInfo.score = tmp;
+            req.flash('score',tmp);
+            console.log("TMP ->" + tmp);
+
+        }
         currentTemplate[gameInfo.y +1 ][gameInfo.x] = 'p';
         gameInfo.y++;
 
     }else{
-        req.flash('gameError', 'You are at the edge of the universe, u cant go out, Press Start to continue game!');
+        req.flash('gameError', 'You are at the edge of the universe, u cant go out!');
     }
 
 
     req.flash('gameScene', currentTemplate);
     res.redirect('/');
 });
-
-
 
                 //------------------  END OF GAME LOGIC  -------------
 
