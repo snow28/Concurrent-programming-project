@@ -119,7 +119,7 @@ var startTemplate = [
     [['x'],['x'],['x'],['x'],['x'],['x'],['x'],['x'],['x']]
 ];
 
-var currentTemplate = [];
+var currentTemplate = startTemplate;
 
 var gameInfo = {
     x : 4,
@@ -132,12 +132,16 @@ var gameInfo = {
 app.get('/start',router);
 router.get(('/start'),function(req, res){
     req.flash('score' , '0');
-    currentTemplate = startTemplate;
     req.flash('gameScene',  currentTemplate);
     res.redirect('/');
 });
 
-
+app.get('/restart',router);
+router.get(('/restart'),function(req, res){
+    req.flash('score' , '0');
+    gameInfo.score = 0;
+    res.redirect('/');
+});
 
 app.get('/left', router);
 
